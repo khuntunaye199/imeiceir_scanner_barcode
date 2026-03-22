@@ -1,0 +1,147 @@
+[3/22/2026 9:01 AM] Khun Tunaye: <!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEIR Myanmar IMEI Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --bg-color: #f8f9fa;
+        }
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 { color: #333; margin-bottom: 5px; }
+        p { color: #666; font-size: 14px; margin-bottom: 20px; }
+        
+        #reader {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--primary-color) !important;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+        }
+        #scanned-result {
+            display: block;
+            font-size: 28px;
+            font-weight: bold;
+            color: #d9534f;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+        .btn-copy {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            display: none; /* စကန်မဖတ်ခင် ဖျောက်ထားမည် */
+            transition: 0.3s;
+        }
+        .btn-copy:active { transform: scale(0.98); }
+
+        /* Scanning Line Animation */
+        #reader__scan_region { position: relative; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>IMEI Scanner</h2>
+        <p>ဖုန်းဗူးခွံပေါ်ရှိ IMEI ၁၅ လုံးကို စကန်ဖတ်ပါ</p>
+
+        <!-- Scanner -->
+        <div id="reader"></div>
+
+        <!-- Result -->
+        <div class="result-box">
+            <span id="scanned-result">နံပါတ် စောင့်ဆိုင်းနေသည်...</span>
+            <button class="btn-copy" id="copy-btn" onclick="copyToClipboard()">
+                IMEI ကို Copy ကူးမည်
+            </button>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 12px; color: #999;">
+            * ၁၅ လုံးပြည့်မှသာ Copy ခလုတ် ပေါ်လာပါမည်။
+        </p>
+    </div>
+
+    <script>
+        const resultDisplay = document.getElementById('scanned-result');
+        const copyBtn = document.getElementById('copy-btn');
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Space တွေရှိရင် ဖယ်ထုတ်မယ်
+            const cleanText = decodedText.replace(/\s/g, '');
+
+            // IMEI ၁၅ လုံး ဟုတ်မဟုတ် စစ်ဆေးမယ်
+            if (cleanText.length === 15 && /^\d+$/.test(cleanText)) {
+                resultDisplay.innerText = cleanText;
+                resultDisplay.style.color = "#28a745"; // Success color
+                copyBtn.style.display = 'block'; // Copy button ပြပေးမယ်
+                
+                // တုန်ခါမှုပေးမယ်
+                if (navigator.vibrate) navigator.vibrate(150);
+            } else {
+                // ၁၅ လုံးမဟုတ်ရင်လည်း ပြပေးမယ် ဒါပေမယ့် copy button ဖျောက်ထားမယ်
+                resultDisplay.innerText = cleanText;
+                resultDisplay.style.color = "#d9534f";
+                copyBtn.style.display = 'none';
+            }
+        }
+
+        function onScanFailure(error) {
+            // ဖတ်နေစဉ်အတွင်း (Error မပြပါ)
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 20,
+[3/22/2026 9:01 AM] Khun Tunaye: qrbox: {width: 300, height: 120}, // IMEI Barcode နဲ့ ကိုက်အောင် အလျားရှည်ရှည်ထားသည်
+                aspectRatio: 1.0 
+            }, 
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        function copyToClipboard() {
+            const textToCopy = resultDisplay.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("IMEI: " + textToCopy + "\nကို Copy ကူးပြီးပါပြီ။ CEIR Website တွင် Paste လုပ်နိုင်ပါပြီ။");
+            }).catch(err => {
+                alert("Copy လုပ်မရပါ၊ Browser Permission စစ်ပေးပါ။");
+            });
+        }
+    </script>
+
+</body>
+</html>
